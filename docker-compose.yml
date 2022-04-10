@@ -1,0 +1,10 @@
+version: '3.4'
+
+services:
+  catalogservice:
+    image: ${DOCKER_REGISTRY-}catalogservice
+    build:
+      context: .
+      dockerfile: CatalogService/Dockerfile
+    ports:
+    - "0.0.0.0:5555:5000"
