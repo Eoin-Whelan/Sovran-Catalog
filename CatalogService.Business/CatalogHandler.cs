@@ -22,7 +22,7 @@ namespace CatalogService.Business
         public CatalogHandler(CatalogDatabaseSettings settings)//, ISovranLogger logger)
         {
             _settings = settings;
-            _clientSettings = MongoClientSettings.FromConnectionString(_settings.ConnectionString);
+            _clientSettings = MongoClientSettings.FromConnectionString("mongodb+srv://overseer:DunwallRats@sovranmerchantcatalog.r38ic.mongodb.net/sovran?retryWrites=true&w=majority");
             _clientSettings.ServerApi = new ServerApi(ServerApiVersion.V1);
             //_logger = logger;
         }
