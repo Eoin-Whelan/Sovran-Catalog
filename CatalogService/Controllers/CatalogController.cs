@@ -48,6 +48,7 @@ namespace CatalogService.Controllers
             {
                 //await _logger.LogPayload(entry);
 
+
                 var result = await _handler.InsertMerchant(entry);
                 if (result)
                 {
