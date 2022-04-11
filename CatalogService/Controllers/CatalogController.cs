@@ -41,29 +41,29 @@ namespace CatalogService.Controllers
         /// <param name="entry"></param>
         /// <param name="image"></param>
         /// <returns></returns>
-        [EnableCors("Dev")]
         [HttpPost("insertMerchant")]
         public async Task<IActionResult> InsertMerchant([FromBody]CatalogEntry entry)
         {
-            try
-            {
-                //await _logger.LogPayload(entry);
+            //try
+            //{
+            //    //await _logger.LogPayload(entry);
 
-                var result = await _handler.InsertMerchant(entry);
-                if (result)
-                {
-                    JsonResult response = new JsonResult(result);
-                    return Ok(response);
-                }
-                else
-                {
-                    return StatusCode(500);
-                }
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
+            //    var result = await _handler.InsertMerchant(entry);
+            //    if (result)
+            //    {
+            //        JsonResult response = new JsonResult(result);
+            //        return Ok(response);
+            //    }
+            //    else
+            //    {
+            //        return StatusCode(500);
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    return StatusCode(500, ex.Message);
+            //}
+            return Ok();
         }
 
         [Route("updateMerchant")]
