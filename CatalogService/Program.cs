@@ -4,6 +4,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 using System.Configuration;
+using Sovran.Logger;
+using CatalogService.Utilities.Cloudinary;
+using CloudinaryDotNet;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,36 +19,40 @@ var connString = builder.Configuration.GetSection("CatalogDatabaseSettings:Conne
 var db = builder.Configuration.GetSection("CatalogDatabaseSettings:DatabaseName").Value;
 var catalog = builder.Configuration.GetSection("CatalogDatabaseSettings:CatalogsCollectionName").Value;
 
+//  Catalog handler setup
 builder.Services.AddScoped<CatalogDatabaseSettings>(x => new CatalogDatabaseSettings
 {
     ConnectionString = connString,
     DatabaseName = db,
     CatalogsCollectionName = catalog
 });
-
-//builder.Services.AddScoped<ISovranLogger, SovranLogger>(x => new SovranLogger("CatalogService"
-//                                                                                ,connString, 
-//                                                                                "tat"));
-
-
-builder.Services.AddCors(o => o.AddPolicy("Dev", builder =>
-{
-    builder.WithOrigins("http://localhost.com")
-           .AllowAnyMethod()
-           .AllowAnyHeader();
-
-}));
-
-
-
 builder.Services.AddScoped<ICatalogHandler, CatalogHandler>();
-//builder.Services.Configure<CatalogDatabaseSettings>(
-//    builder.Configuration.GetSection("CatalogDatabase"));
-builder.Services.AddHostedService<StockScribe>();
+
+//  Image handler setup
+builder.Services.AddScoped<Account>(x => new Account
+{
+    ApiKey = builder.Configuration.GetSection("cloudinaryApiKey").Value,
+    ApiSecret = builder.Configuration.GetSection("cloudinaryApiSecret").Value,
+    Cloud = builder.Configuration.GetSection("cloudinaryDomain").Value
+});
+builder.Services.AddScoped<IImageHandler, ImageHandler>();
+
+//  Logger setup
+builder.Services.AddScoped<ISovranLogger, SovranLogger>(x => new SovranLogger(
+    "Catalog",
+    builder.Configuration.GetConnectionString("loggerMongo"),
+    builder.Configuration.GetConnectionString("loggerSql")
+    )
+);
+//  Add StockScribe service task.
+builder.Services.AddHostedService<StockScribe>(
+            x => new StockScribe(builder.Configuration.GetConnectionString("rabbitMq"),
+                                    builder.Configuration.GetSection("CatalogDatabaseSettings:ConnectionString").Value));
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
+
+//  Add SwaggerGen
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo

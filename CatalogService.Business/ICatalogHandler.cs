@@ -8,6 +8,10 @@ using static CatalogService.Business.StockScribe;
 
 namespace CatalogService.Business
 {
+    /// <summary>
+    /// Contract for CatalogHandler service.
+    /// </summary>
+    /// <see cref="CatalogHandler"/>
     public interface ICatalogHandler
     {
         //  Merchant

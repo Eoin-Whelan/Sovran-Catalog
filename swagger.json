@@ -1,16 +1,23 @@
 {
   "openapi": "3.0.1",
   "info": {
-    "title": "CatalogService",
-    "version": "1.0"
+    "title": "Catalog Service API",
+    "description": "<h2>CatalogController is an API for all Catalog service business logic.</h2><br>This functionality extends to:<ul><li> Inserting a new catalog(Registration flow)<li> Inserting a new item for a given merchant.<li> Update an existing item's details.<li> Updating a merchant's public details (e.g.Support information)<li> Retrieving a given merchant's entire catalog (Browsing purposes).</ul>",
+    "contact": {
+      "name": "Eoin Whelan (Farrell)",
+      "email": "C00164354@itcarlow.ie"
+    },
+    "version": "v1"
   },
   "paths": {
-    "/Catalog/insertMerchant": {
+    "/Catalog/InsertMerchant": {
       "post": {
         "tags": [
           "Catalog"
         ],
+        "summary": "InsertMerchant - Registration flow API call. Inserts new catalog with single item.",
         "requestBody": {
+          "description": "",
           "content": {
             "application/json": {
               "schema": {
@@ -36,21 +43,24 @@
         }
       }
     },
-    "/Catalog/updateMerchant": {
+    "/Catalog/UpdateMerchant": {
       "post": {
         "tags": [
           "Catalog"
         ],
+        "summary": "UpdateMerchant - Update flow API call. Updates a given merchant with a dictionary of key/value details.",
         "parameters": [
           {
             "name": "userName",
             "in": "query",
+            "description": "Name of the user.",
             "schema": {
               "type": "string"
             }
           }
         ],
         "requestBody": {
+          "description": "The updated details.",
           "content": {
             "application/json": {
               "schema": {
@@ -85,15 +95,17 @@
         }
       }
     },
-    "/Catalog/pullCatalog": {
+    "/Catalog/PullCatalog": {
       "get": {
         "tags": [
           "Catalog"
         ],
+        "summary": "Pulls a given username's catalog for storefront display.",
         "parameters": [
           {
             "name": "username",
             "in": "query",
+            "description": "The username.",
             "schema": {
               "type": "string"
             }
@@ -106,21 +118,24 @@
         }
       }
     },
-    "/Catalog/addListing": {
+    "/Catalog/AddListing": {
       "post": {
         "tags": [
           "Catalog"
         ],
+        "summary": "Adds a new product listing to a given merchant's catalog.",
         "parameters": [
           {
             "name": "username",
             "in": "query",
+            "description": "The username.",
             "schema": {
               "type": "string"
             }
           }
         ],
         "requestBody": {
+          "description": "The new item.",
           "content": {
             "application/json": {
               "schema": {
@@ -146,21 +161,24 @@
         }
       }
     },
-    "/Catalog/updateListing": {
+    "/Catalog/UpdateListing": {
       "post": {
         "tags": [
           "Catalog"
         ],
+        "summary": "Updates an existing listing with new details.",
         "parameters": [
           {
             "name": "userName",
             "in": "query",
+            "description": "Name of the user.",
             "schema": {
               "type": "string"
             }
           }
         ],
         "requestBody": {
+          "description": "The updated item.",
           "content": {
             "application/json": {
               "schema": {
@@ -186,15 +204,17 @@
         }
       }
     },
-    "/Catalog/deleteListing": {
+    "/Catalog/DeleteListing": {
       "post": {
         "tags": [
           "Catalog"
         ],
+        "summary": "Deletes an existing listing from a given merchant's catalog.",
         "parameters": [
           {
             "name": "userName",
             "in": "query",
+            "description": "Name of the user.",
             "schema": {
               "type": "string"
             }
@@ -202,6 +222,7 @@
           {
             "name": "itemId",
             "in": "query",
+            "description": "The item identifier.",
             "schema": {
               "type": "string"
             }

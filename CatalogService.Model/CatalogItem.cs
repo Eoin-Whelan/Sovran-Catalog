@@ -5,6 +5,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace CatalogService.Model
 {
+    /// <summary>
+    /// Class representing given Catalog item within a merchant's catalog document.
+    /// </summary>
     public class CatalogItem
     {
         [Required]
@@ -20,6 +23,6 @@ namespace CatalogService.Model
         [BsonRepresentation(BsonType.ObjectId)]
         public string? Id { get; set; }
         [Required]
-        public bool IsDeleted { get; set; }
+        public bool IsDeleted { get; set; } = false;
     }
 }

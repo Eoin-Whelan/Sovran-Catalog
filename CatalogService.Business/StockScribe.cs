@@ -9,33 +9,44 @@ using System.Text.Json;
 
 namespace CatalogService.Business
 {
+    /// <summary>
+    /// StockScribe is a background task purpose-built to decrement stock upon a 
+    /// new purchase. 
+    /// </summary>
+    /// <seealso cref="Microsoft.Extensions.Hosting.BackgroundService" />
     public class StockScribe : BackgroundService
     {
-        private readonly ILogger<StockScribe> _logger;
         private ConnectionFactory _connectionFactory;
         private static IModel? _channel;
         private IConnection _conn;
         private const string _queueName = "stockDecrementer";
-
+        private 
         bool durable = true;
         bool exclusive = false;
         bool autoDelete = false;
 
-        private readonly string _url = "amqps://fientxhx:GnS4aTKpa7dM-bGOhMhDn9v7qLZJ2tJZ@goose.rmq2.cloudamqp.com/fientxhx";
-
+        
+        public string _queueUrl;
+        public static string _mongoUrl;
         private ManualResetEvent _resetEvent = new ManualResetEvent(false);
 
-        public StockScribe(ILogger<StockScribe> logger)
+        public StockScribe(string queueStr, string mongoStr)
         {
-            _logger = logger;
+            _queueUrl = queueStr;
+            _mongoUrl = mongoStr;
         }
 
 
+        /// <summary>
+        /// Initiating call. Creates a listener for the RabbitMq queue.
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public override Task StartAsync(CancellationToken cancellationToken)
         {
             _connectionFactory = new ConnectionFactory()
             {
-                Uri = new Uri(_url),
+                Uri = new Uri(_queueUrl),
                 DispatchConsumersAsync = true
             };
 
@@ -54,6 +65,11 @@ namespace CatalogService.Business
             return base.StartAsync(cancellationToken);
         }
 
+        /// <summary>
+        /// Execution of an event-driven task. (i.e. when a message is received.)
+        /// </summary>
+        /// <param name="stoppingToken"></param>
+        /// <returns></returns>
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             stoppingToken.ThrowIfCancellationRequested();
@@ -62,11 +78,18 @@ namespace CatalogService.Business
 
             consumer.Received += ConsumeMessage;
 
-            Console.WriteLine("Task Complete!");
             _channel.BasicConsume(_queueName, false, consumer);
             await Task.CompletedTask;
         }
 
+        /// <summary>
+        /// Main task purpose. DecrementRequest is serialized and used in order to perform a stock item decrement.
+        /// 
+        /// Used in order flow.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="event"></param>
+        /// <returns></returns>
         private static async Task ConsumeMessage(object sender, BasicDeliverEventArgs @event)
         {
 
@@ -75,7 +98,7 @@ namespace CatalogService.Business
 
             DecrementRequest request = JsonSerializer.Deserialize<DecrementRequest>(body);
 
-            var clientSettings = MongoClientSettings.FromConnectionString("mongodb+srv://overseer:DunwallRats@sovranmerchantcatalog.r38ic.mongodb.net/sovran?retryWrites=true&w=majority");
+            var clientSettings = MongoClientSettings.FromConnectionString(_mongoUrl);
             clientSettings.ServerApi = new ServerApi(ServerApiVersion.V1);
             var client = new MongoClient(clientSettings);
             var db = client.GetDatabase("sovran");
@@ -100,19 +123,37 @@ namespace CatalogService.Business
             }
         }
 
-
+        /// <summary>
+        /// Unused method to cease task. Given task is a necessary background service, it is never called to cease.
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public override async Task StopAsync(CancellationToken cancellationToken)
         {
             await base.StopAsync(cancellationToken);
             _conn.Close();
-            _logger.LogInformation("We're quitting out");
         }
 
+        /// <summary>
+        /// Main container class for stock decrement details.
+        /// </summary>
         public class DecrementRequest
         {
+            /// <summary>
+            /// Username of merchant whom's stock is being accessed.
+            /// </summary>
             public string userName { get; set; }
+            /// <summary>
+            /// Id of their respective stock item.
+            /// </summary>
             public string itemId { get; set; }
+            /// <summary>
+            /// Detail is for the respective stock item's measurements, size, etc.
+            /// </summary>
             public string detail { get; set; }
+            /// <summary>
+            /// The number of this item to decrement. Given current progress, this will be limited to one item.
+            /// </summary>
             public int quantity { get; set; }
         }
     }

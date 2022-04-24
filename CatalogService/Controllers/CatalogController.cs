@@ -5,6 +5,7 @@ using CatalogService.Utilities.Cloudinary;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Sovran.Logger;
 using System.Text.Json;
 
 namespace CatalogService.Controllers
@@ -24,49 +25,57 @@ namespace CatalogService.Controllers
     public class CatalogController : ControllerBase
     {
         private readonly CatalogDatabaseSettings _settings;
-        //private readonly ISovranLogger _logger;
-        //private readonly ILogger<CatalogController> _logger;
+        private readonly ISovranLogger _logger;
         private readonly ICatalogHandler _handler;
-        public CatalogController(ICatalogHandler handler, CatalogDatabaseSettings settings)
+        public CatalogController(ISovranLogger logger, ICatalogHandler handler, CatalogDatabaseSettings settings)
         {
-            //_logger = logger;
+            _logger = logger;
             _handler = handler;
             _settings = settings;
         }
 
 
         /// <summary>
-        /// 
+        /// InsertMerchant - Registration flow API call. Inserts new catalog with single item.
         /// </summary>
         /// <param name="entry"></param>
-        /// <param name="image"></param>
         /// <returns></returns>
-        [HttpPost("insertMerchant")]
+        [HttpPost("/Catalog/InsertMerchant")]
         public async Task<IActionResult> InsertMerchant([FromBody]CatalogEntry entry)
         {
             try
             {
-                //await _logger.LogPayload(entry);
-
+                _logger.LogPayload(entry);
+                _logger.LogActivity("Initializing registration flow. Username: " + entry.userName);
 
                 var result = await _handler.InsertMerchant(entry);
                 if (result)
                 {
+                    _logger.LogActivity("Successful registration flow. Username: " + entry.userName);
                     JsonResult response = new JsonResult(result);
                     return Ok(response);
                 }
                 else
                 {
+                    _logger.LogActivity("Unsuccessful registration flow. Username: " + entry.userName);
+                    return BadRequest();
                     return StatusCode(500);
                 }
             }
             catch (Exception ex)
             {
+                _logger.LogError("Exception caught. Ex: "+ ex.Message);
                 return StatusCode(500, ex.Message);
             }
         }
 
-        [Route("updateMerchant")]
+        /// <summary>
+        /// UpdateMerchant - Update flow API call. Updates a given merchant with a dictionary of key/value details.
+        /// </summary>
+        /// <param name="userName">Name of the user.</param>
+        /// <param name="updatedDetails">The updated details.</param>
+        /// <returns></returns>
+        [Route("/Catalog/UpdateMerchant")]
         [HttpPost]
         public async Task<IActionResult> updateMerchant(string userName, Dictionary<string, string> updatedDetails)
         {
@@ -89,7 +98,12 @@ namespace CatalogService.Controllers
             }
         }
 
-        [Route("pullCatalog")]
+        /// <summary>
+        /// Pulls a given username's catalog for storefront display.
+        /// </summary>
+        /// <param name="username">The username.</param>
+        /// <returns></returns>
+        [Route("/Catalog/PullCatalog")]
         [HttpGet]
         public async Task<IActionResult> pullCatalog(string username)
         {
@@ -113,7 +127,13 @@ namespace CatalogService.Controllers
             }
         }
 
-        [Route("addListing")]
+        /// <summary>
+        /// Adds a new product listing to a given merchant's catalog.
+        /// </summary>
+        /// <param name="username">The username.</param>
+        /// <param name="newItem">The new item.</param>
+        /// <returns></returns>
+        [Route("/Catalog/AddListing")]
         [HttpPost]
         public async Task<IActionResult> addListing(string username, CatalogItem newItem)
         {
@@ -137,9 +157,15 @@ namespace CatalogService.Controllers
             }
         }
 
-        [Route("updateListing")]
+        /// <summary>
+        /// Updates an existing listing with new details.
+        /// </summary>
+        /// <param name="userName">Name of the user.</param>
+        /// <param name="updatedItem">The updated item.</param>
+        /// <returns></returns>
+        [Route("/Catalog/UpdateListing")]
         [HttpPost]
-        public async Task<IActionResult> updateListing(string userName, CatalogItem updatedItem)
+        public async Task<IActionResult> UpdateListing(string userName, CatalogItem updatedItem)
         {
             try
             {
@@ -152,10 +178,15 @@ namespace CatalogService.Controllers
             }
         }
 
-
-        [Route("deleteListing")]
+        /// <summary>
+        /// Deletes an existing listing from a given merchant's catalog.
+        /// </summary>
+        /// <param name="userName">Name of the user.</param>
+        /// <param name="itemId">The item identifier.</param>
+        /// <returns></returns>
+        [Route("/Catalog/DeleteListing")]
         [HttpPost]
-        public async Task<IActionResult> updateListing(string userName, string itemId)
+        public async Task<IActionResult> DeleteListing(string userName, string itemId)
         {
             try
             {
@@ -166,40 +197,6 @@ namespace CatalogService.Controllers
             {
                 return StatusCode(500);
             }
-        }
-
-        [Route("uploadImg")]
-        [HttpPost]
-        public async Task<IActionResult> uploadImg([FromBody] Image submission)
-        {
-            try
-            {
-                //string encoded;
-
-
-                //using (var ms = new MemoryStream())
-                //{
-                //    encodedImg.CopyTo(ms);
-                //    var fileBytes = ms.ToArray();
-                //    encoded = Convert.ToBase64String(fileBytes);
-                //}
-
-                //byte[] bytes = Convert.FromBase64String(encoded);
-                //string base64ImageRepresentation = Convert.ToBase64String(encodedImg);
-                ImageHandler handler = new ImageHandler();
-                var result = handler.PostImage(submission.EncodedImg, submission.Username, "profileImg");
-                return Ok(result);
-            }
-            catch (Exception e)
-            {
-                return StatusCode(500);
-            }
-        }
-
-        public class Image
-        {
-            public string EncodedImg { get; set; }
-            public string Username { get; set; } 
         }
     }
 }

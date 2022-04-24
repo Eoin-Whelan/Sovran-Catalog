@@ -9,6 +9,9 @@ using System.Threading.Tasks;
 
 namespace CatalogService.Model
 {
+    /// <summary>
+    /// Used as an ORM-level mapping of a given catalog entry on MongoDb
+    /// </summary>
     public class CatalogEntry
     {
         [BsonId]
@@ -23,8 +26,6 @@ namespace CatalogService.Model
 
         [BsonRequired]
         public List<CatalogItem> catalog { get; set; }
-        //[BsonRequired]
         public string? profileImg { get; set; }
-
     }
 }
