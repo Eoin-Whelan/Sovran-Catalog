@@ -110,8 +110,11 @@ namespace CatalogService.Business
             _logger.LogActivity("Initiating item insertion flow for " + userName);
             try
             {
-                var itemImageUrl = _imageHandler.PostProductImg(newItem.itemImg, userName, newItem.itemName);
-                newItem.itemImg = itemImageUrl;
+                if(newItem.itemImg != null)
+                {
+                    var itemImageUrl = _imageHandler.PostProductImg(newItem.itemImg, userName, newItem.itemName);
+                    newItem.itemImg = itemImageUrl;
+                }
                 var client = new MongoClient(_clientSettings);
                 var database = client.GetDatabase("sovran");
                 _catalogs = database.GetCollection<CatalogEntry>("catalogs");
