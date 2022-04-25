@@ -27,7 +27,7 @@ namespace CatalogService.Business
 
         
         public string _queueUrl;
-        public static string _mongoUrl;
+        public string _mongoUrl;
         private ManualResetEvent _resetEvent = new ManualResetEvent(false);
 
         public StockScribe(string queueStr, string mongoStr)
@@ -98,7 +98,7 @@ namespace CatalogService.Business
 
             DecrementRequest request = JsonSerializer.Deserialize<DecrementRequest>(body);
 
-            var clientSettings = MongoClientSettings.FromConnectionString(_mongoUrl);
+            var clientSettings = MongoClientSettings.FromConnectionString("amqps://fientxhx:GnS4aTKpa7dM-bGOhMhDn9v7qLZJ2tJZ@goose.rmq2.cloudamqp.com/fientxhx");
             clientSettings.ServerApi = new ServerApi(ServerApiVersion.V1);
             var client = new MongoClient(clientSettings);
             var db = client.GetDatabase("sovran");
