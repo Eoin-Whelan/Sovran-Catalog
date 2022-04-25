@@ -18,7 +18,7 @@ namespace CatalogService.Model
         public Dictionary<string, int> itemQty { get; set; }
         [Required]
         public string itemDesc { get; set; }
-        public string itemImg { get; set; }
+        public string? itemImg { get; set; }
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
         public string? Id { get; set; }
