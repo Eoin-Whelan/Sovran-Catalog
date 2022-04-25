@@ -12,19 +12,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 
 //  DEPENDENCY INJECTION
-builder.Services.Configure<CatalogDatabaseSettings>(
-        builder.Configuration.GetSection("CatalogDatabaseSettings"));
-
-var connString = builder.Configuration.GetSection("CatalogDatabaseSettings:ConnectionString").Value;
-var db = builder.Configuration.GetSection("CatalogDatabaseSettings:DatabaseName").Value;
-var catalog = builder.Configuration.GetSection("CatalogDatabaseSettings:CatalogsCollectionName").Value;
-
 //  Catalog handler setup
 builder.Services.AddScoped<CatalogDatabaseSettings>(x => new CatalogDatabaseSettings
 {
-    ConnectionString = connString,
-    DatabaseName = db,
-    CatalogsCollectionName = catalog
+    ConnectionString = builder.Configuration.GetConnectionString("mongoDb"),
+    DatabaseName = builder.Configuration.GetSection("DatabaseName").Value,
+    CatalogsCollectionName = builder.Configuration.GetSection("CatalogsCollectionName").Value
 });
 builder.Services.AddScoped<ICatalogHandler, CatalogHandler>();
 
@@ -40,7 +33,7 @@ builder.Services.AddScoped<IImageHandler, ImageHandler>();
 //  Logger setup
 builder.Services.AddScoped<ISovranLogger, SovranLogger>(x => new SovranLogger(
     "Catalog",
-    builder.Configuration.GetConnectionString("loggerMongo"),
+    builder.Configuration.GetConnectionString("mongoDb"),
     builder.Configuration.GetConnectionString("loggerSql")
     )
 );
